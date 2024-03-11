@@ -36,10 +36,16 @@ func main() {
 	studentService := &service.StudentService{StudentRepo: studentRepo}
 	studentHandler := &handler.StudentHandler{StudentService: studentService}
 
+	encounterRepo := &repo.EncounterRepository{DatabaseConnection: database}
+	encounterService := &service.EncounterService{EncounterRepo: encounterRepo}
+	encounterHandler := &handler.EncounterHandler{EncounterService: encounterService}
+
 	router := mux.NewRouter().StrictSlash(true)
 
 	router.HandleFunc("/students/{id}", studentHandler.Get).Methods("GET")
 	router.HandleFunc("/students", studentHandler.Create).Methods("POST")
+	router.HandleFunc("/encounters", encounterHandler.Create).Methods("POST")
+	router.HandleFunc("/encounters", encounterHandler.Update).Methods("PUT")
 
 	// Set up CORS middleware
 	allowedHeaders := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"})
@@ -48,5 +54,5 @@ func main() {
 
 	router.PathPrefix("/").Handler(http.FileServer(http.Dir("./static")))
 	println("Server starting")
-	log.Fatal(http.ListenAndServe(":8081", handlers.CORS(allowedHeaders, allowedOrigins, allowedMethods)(router)))
+	log.Fatal(http.ListenAndServe(":8082", handlers.CORS(allowedHeaders, allowedOrigins, allowedMethods)(router)))
 }
