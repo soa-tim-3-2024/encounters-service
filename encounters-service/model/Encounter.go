@@ -4,14 +4,15 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"errors"
+
+	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 // enum u go-u
 type EncounterStatus int
 
 type EncounterType int
-
-type StringArray []string
 
 const (
 	Active EncounterStatus = iota
@@ -26,9 +27,11 @@ const (
 	KeyPoint
 )
 
+type StringArray []string
+
 type Encounter struct {
-	ID          int             `json:"id"`
-	Title       string          `json:"name"`
+	ID          uuid.UUID       `json:"id"`
+	Title       string          `json:"title"`
 	Description string          `json:"description"`
 	Picture     string          `json:"picture"`
 	Longitude   float64         `json:"longitude"`
@@ -38,12 +41,15 @@ type Encounter struct {
 	Type        EncounterType   `json:"type"`
 }
 
-// konvertuje tip podatka iz go-a u tip podatka u bazi (jer gorm ne moze sam da rukuje sa nizom stringova kao atributom)
+func (encounter *Encounter) BeforeCreate(scope *gorm.DB) error {
+	encounter.ID = uuid.New()
+	return nil
+}
+
 func (a StringArray) Value() (driver.Value, error) {
 	return json.Marshal(a)
 }
 
-// Konvertuje iz tipa podatka iz baze u tip podatka u go-u
 func (a *StringArray) Scan(value interface{}) error {
 	if value == nil {
 		*a = nil

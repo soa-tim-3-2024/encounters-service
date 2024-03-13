@@ -23,6 +23,12 @@ func initDB() *gorm.DB {
 	}
 
 	database.AutoMigrate(&model.Student{})
+
+	database.AutoMigrate(&model.Encounter{})
+	database.AutoMigrate(&model.MiscEncounter{})
+	database.AutoMigrate(&model.SocialEncounter{})
+	database.AutoMigrate(&model.KeyPointEncounter{})
+	database.AutoMigrate(&model.HiddenLocationEncounter{})
 	return database
 }
 
@@ -36,16 +42,34 @@ func main() {
 	studentService := &service.StudentService{StudentRepo: studentRepo}
 	studentHandler := &handler.StudentHandler{StudentService: studentService}
 
-	encounterRepo := &repo.EncounterRepository{DatabaseConnection: database}
-	encounterService := &service.EncounterService{EncounterRepo: encounterRepo}
-	encounterHandler := &handler.EncounterHandler{EncounterService: encounterService}
+	miscEncounterRepo := &repo.MiscEncounterRepository{DatabaseConnection: database}
+	miscEncounterService := &service.MiscEncounterService{EncounterRepo: miscEncounterRepo}
+	miscEncounterHandler := &handler.MiscEncounterHandler{MiscEncounterService: miscEncounterService}
+
+	socialEncounterRepo := &repo.SocialEncounterRepository{DatabaseConnection: database}
+	socialEncounterService := &service.SocialEncounterService{EncounterRepo: socialEncounterRepo}
+	socialEncounterHandler := &handler.SocialEncounterHandler{SocialEncounterService: socialEncounterService}
+
+	keyPointEncounterRepo := &repo.KeyPointEncounterRepository{DatabaseConnection: database}
+	keyPointEncounterService := &service.KeyPointEncounterService{EncounterRepo: keyPointEncounterRepo}
+	keyPointEncounterHandler := &handler.KeyPointEncounterHandler{KeyPointEncounterService: keyPointEncounterService}
+
+	hiddenLocationEncounterRepo := &repo.HiddenLocationEncounterRepository{DatabaseConnection: database}
+	hiddenLocationEncounterService := &service.HiddenLocationEncounterService{EncounterRepo: hiddenLocationEncounterRepo}
+	hiddenLocationEncounterHandler := &handler.HiddenLocationEncounterHandler{HiddenLocationEncounterService: hiddenLocationEncounterService}
 
 	router := mux.NewRouter().StrictSlash(true)
 
 	router.HandleFunc("/students/{id}", studentHandler.Get).Methods("GET")
 	router.HandleFunc("/students", studentHandler.Create).Methods("POST")
-	router.HandleFunc("/encounters", encounterHandler.Create).Methods("POST")
-	router.HandleFunc("/encounters", encounterHandler.Update).Methods("PUT")
+	router.HandleFunc("/misc/encounters/{id}", miscEncounterHandler.Get).Methods("GET")
+	router.HandleFunc("/misc/encounters", miscEncounterHandler.Create).Methods("POST")
+	router.HandleFunc("/social/encounters/{id}", socialEncounterHandler.Get).Methods("GET")
+	router.HandleFunc("/social/encounters", socialEncounterHandler.Create).Methods("POST")
+	router.HandleFunc("/hidden/location/encounters/{id}", hiddenLocationEncounterHandler.Get).Methods("GET")
+	router.HandleFunc("/hidden/location/encounters", hiddenLocationEncounterHandler.Create).Methods("POST")
+	router.HandleFunc("/keyPoint/encounters/{id}", keyPointEncounterHandler.Get).Methods("GET")
+	router.HandleFunc("/keyPoint/encounters", keyPointEncounterHandler.Create).Methods("POST")
 
 	// Set up CORS middleware
 	allowedHeaders := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"})
