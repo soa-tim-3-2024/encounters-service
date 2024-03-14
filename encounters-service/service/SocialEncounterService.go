@@ -26,3 +26,8 @@ func (service *SocialEncounterService) Create(encounter *model.SocialEncounter) 
 	}
 	return nil
 }
+
+func (service *SocialEncounterService) Save(encounter *model.SocialEncounter) error {
+	err := service.EncounterRepo.Save(encounter)
+	return err
+}

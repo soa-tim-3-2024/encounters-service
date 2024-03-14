@@ -4,6 +4,7 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"errors"
+	"math"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -44,6 +45,35 @@ type Encounter struct {
 func (encounter *Encounter) BeforeCreate(scope *gorm.DB) error {
 	encounter.ID = uuid.New()
 	return nil
+}
+
+func (encounter *Encounter) CanActivate(userLongitute int, userLatitude int) (bool, error) {
+	if encounter.Status != EncounterStatus(Active) {
+		return false, errors.New("encounter is not active")
+	}
+	if userLongitute < -180 || userLongitute > 180 {
+		return false, errors.New("invalid longitude")
+	}
+	if userLatitude < -90 || userLatitude > 90 {
+		return false, errors.New("invalid latitude")
+	}
+	earthRadius := 6371000
+	encounterRadius := 50 //meters
+	latitude1 := encounter.Latitude * math.Pi / 180
+	longitude1 := encounter.Longitude * math.Pi / 180
+	latitude2 := float64(userLatitude) * math.Pi / 180
+	longitude2 := float64(userLongitute) * math.Pi / 180
+
+	latitudeDistance := latitude2 - latitude1
+	longitudeDistance := longitude2 - longitude1
+
+	a := math.Sin(latitudeDistance/2)*math.Sin(latitudeDistance/2) +
+		math.Cos(latitude1)*math.Cos(latitude2)*
+			math.Sin(longitudeDistance/2)*math.Sin(longitudeDistance/2)
+	c := 2 * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
+	distance := float64(earthRadius) * c
+
+	return (distance < float64(encounterRadius)), nil
 }
 
 func (a StringArray) Value() (driver.Value, error) {

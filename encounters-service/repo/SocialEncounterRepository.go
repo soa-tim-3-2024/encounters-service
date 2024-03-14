@@ -28,3 +28,12 @@ func (repo *SocialEncounterRepository) CreateEncounter(encounter *model.SocialEn
 	println("Rows affected: ", dbResult.RowsAffected)
 	return nil
 }
+
+func (repo *SocialEncounterRepository) Save(encounter *model.SocialEncounter) error {
+	dbResult := repo.DatabaseConnection.Save(encounter)
+	if dbResult.Error != nil {
+		return dbResult.Error
+	}
+	println("Rows affected: ", dbResult.RowsAffected)
+	return nil
+}

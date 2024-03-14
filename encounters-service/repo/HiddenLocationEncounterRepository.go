@@ -28,3 +28,12 @@ func (repo *HiddenLocationEncounterRepository) CreateEncounter(encounter *model.
 	println("Rows affected: ", dbResult.RowsAffected)
 	return nil
 }
+
+func (repo *HiddenLocationEncounterRepository) Save(encounter *model.HiddenLocationEncounter) error {
+	dbResult := repo.DatabaseConnection.Save(encounter)
+	if dbResult.Error != nil {
+		return dbResult.Error
+	}
+	println("Rows affected: ", dbResult.RowsAffected)
+	return nil
+}

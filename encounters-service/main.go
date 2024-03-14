@@ -30,6 +30,7 @@ func initDB() *gorm.DB {
 	database.AutoMigrate(&model.KeyPointEncounter{})
 	database.AutoMigrate(&model.HiddenLocationEncounter{})
 	database.AutoMigrate(&model.TouristProgress{})
+	database.AutoMigrate(&model.DoneEncounter{})
 
 	database.Exec("INSERT INTO tourist_progresses VALUES ('aec7e123-233d-4a09-a289-75308ea5b7e6', '-4', '85', '12')")
 
@@ -66,6 +67,18 @@ func main() {
 	touristProgressService := &service.TouristProgressService{TPRepo: touristProgressRepo}
 	touristProgressHandler := &handler.TouristProgressHandler{TouristProgressService: touristProgressService}
 
+	doneEncounterRepo := &repo.DoneEncounterRepository{DatabaseConnection: database}
+	doneEncounterService := &service.DoneEncounterService{DoneEncounterRepo: doneEncounterRepo}
+	//doneEncounterHandler := &handler.DoneEncounterHandler{DoneEncounterService: doneEncounterService}
+
+	encounterService := &service.EncounterService{HiddenLocationEncounterService: *hiddenLocationEncounterService,
+		MiscEncounterService:     *miscEncounterService,
+		SocialEncounterService:   *socialEncounterService,
+		KeyPointEncounterService: *keyPointEncounterService,
+		TouristProgressService:   *touristProgressService,
+		DoneEncounterService:     *doneEncounterService}
+	encounterHandler := &handler.EncounterHandler{EncounterService: *encounterService}
+
 	router := mux.NewRouter().StrictSlash(true)
 
 	router.HandleFunc("/students/{id}", studentHandler.Get).Methods("GET")
@@ -78,6 +91,7 @@ func main() {
 	router.HandleFunc("/hidden/location/encounters", hiddenLocationEncounterHandler.Create).Methods("POST")
 	router.HandleFunc("/keyPoint/encounters/{id}", keyPointEncounterHandler.Get).Methods("GET")
 	router.HandleFunc("/keyPoint/encounters", keyPointEncounterHandler.Create).Methods("POST")
+	router.HandleFunc("/encounters/activate/{id}", encounterHandler.Activate).Methods("POST")
 
 	router.HandleFunc("/progress/{id}", touristProgressHandler.Get).Methods("GET")
 

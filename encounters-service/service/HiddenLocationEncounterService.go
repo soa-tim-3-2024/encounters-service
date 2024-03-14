@@ -26,3 +26,8 @@ func (service *HiddenLocationEncounterService) Create(encounter *model.HiddenLoc
 	}
 	return nil
 }
+
+func (service *HiddenLocationEncounterService) Save(encounter *model.HiddenLocationEncounter) error {
+	err := service.EncounterRepo.Save(encounter)
+	return err
+}

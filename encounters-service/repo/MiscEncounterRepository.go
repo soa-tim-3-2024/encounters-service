@@ -28,3 +28,12 @@ func (repo *MiscEncounterRepository) CreateEncounter(encounter *model.MiscEncoun
 	println("Rows affected: ", dbResult.RowsAffected)
 	return nil
 }
+
+func (repo *MiscEncounterRepository) Save(encounter *model.MiscEncounter) error {
+	dbResult := repo.DatabaseConnection.Save(encounter)
+	if dbResult.Error != nil {
+		return dbResult.Error
+	}
+	println("Rows affected: ", dbResult.RowsAffected)
+	return nil
+}

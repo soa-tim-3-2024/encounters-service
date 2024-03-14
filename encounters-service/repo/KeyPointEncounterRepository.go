@@ -28,3 +28,12 @@ func (repo *KeyPointEncounterRepository) CreateEncounter(encounter *model.KeyPoi
 	println("Rows affected: ", dbResult.RowsAffected)
 	return nil
 }
+
+func (repo *KeyPointEncounterRepository) Save(encounter *model.KeyPointEncounter) error {
+	dbResult := repo.DatabaseConnection.Save(encounter)
+	if dbResult.Error != nil {
+		return dbResult.Error
+	}
+	println("Rows affected: ", dbResult.RowsAffected)
+	return nil
+}
