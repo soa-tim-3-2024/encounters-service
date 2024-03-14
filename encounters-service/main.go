@@ -29,6 +29,10 @@ func initDB() *gorm.DB {
 	database.AutoMigrate(&model.SocialEncounter{})
 	database.AutoMigrate(&model.KeyPointEncounter{})
 	database.AutoMigrate(&model.HiddenLocationEncounter{})
+	database.AutoMigrate(&model.TouristProgress{})
+
+	database.Exec("INSERT INTO tourist_progresses VALUES ('aec7e123-233d-4a09-a289-75308ea5b7e6', '-4', '85', '12')")
+
 	return database
 }
 
@@ -58,6 +62,10 @@ func main() {
 	hiddenLocationEncounterService := &service.HiddenLocationEncounterService{EncounterRepo: hiddenLocationEncounterRepo}
 	hiddenLocationEncounterHandler := &handler.HiddenLocationEncounterHandler{HiddenLocationEncounterService: hiddenLocationEncounterService}
 
+	touristProgressRepo := &repo.TouristProgressRepository{DatabaseConnection: database}
+	touristProgressService := &service.TouristProgressService{TPRepo: touristProgressRepo}
+	touristProgressHandler := &handler.TouristProgressHandler{TouristProgressService: touristProgressService}
+
 	router := mux.NewRouter().StrictSlash(true)
 
 	router.HandleFunc("/students/{id}", studentHandler.Get).Methods("GET")
@@ -70,6 +78,8 @@ func main() {
 	router.HandleFunc("/hidden/location/encounters", hiddenLocationEncounterHandler.Create).Methods("POST")
 	router.HandleFunc("/keyPoint/encounters/{id}", keyPointEncounterHandler.Get).Methods("GET")
 	router.HandleFunc("/keyPoint/encounters", keyPointEncounterHandler.Create).Methods("POST")
+
+	router.HandleFunc("/progress/{id}", touristProgressHandler.Get).Methods("GET")
 
 	// Set up CORS middleware
 	allowedHeaders := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"})

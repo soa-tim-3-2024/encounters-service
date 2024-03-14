@@ -46,16 +46,10 @@ func (handler *MiscEncounterHandler) Create(writer http.ResponseWriter, req *htt
 	}
 
 	var baseEncounter model.Encounter
-	err2 := json.Unmarshal(bodyBytes, &baseEncounter)
-	if err2 != nil {
-		println("Error while parsing json base")
-		writer.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
+	json.Unmarshal(bodyBytes, &baseEncounter)
 	encounter.EncounterID = baseEncounter.ID
 	encounter.Encounter = baseEncounter
-
+	encounter.Encounter.Type = 2
 	err = handler.MiscEncounterService.Create(&encounter)
 	if err != nil {
 		println("Error while creating a new encounter")

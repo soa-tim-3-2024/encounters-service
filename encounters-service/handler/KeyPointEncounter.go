@@ -46,12 +46,10 @@ func (handler *KeyPointEncounterHandler) Create(writer http.ResponseWriter, req 
 	}
 
 	var baseEncounter model.Encounter
-	err2 := json.Unmarshal(bodyBytes, &baseEncounter)
-	if err2 != nil {
-		println("Error while parsing json base")
-		writer.WriteHeader(http.StatusBadRequest)
-		return
-	}
+	json.Unmarshal(bodyBytes, &baseEncounter)
+	encounter.EncounterID = baseEncounter.ID
+	encounter.Encounter = baseEncounter
+	encounter.Encounter.Type = 3
 
 	encounter.EncounterID = baseEncounter.ID
 	encounter.Encounter = baseEncounter
