@@ -37,7 +37,7 @@ func (service *EncounterService) FindEncounter(encounterId uuid.UUID) (model.Enc
 	return model.Encounter{}, errors.New("no encounter found")
 }
 
-func (service *EncounterService) Activate(userId int, longitude int, latitude int, encounterId uuid.UUID) error {
+func (service *EncounterService) Activate(userId int, longitude float64, latitude float64, encounterId uuid.UUID) error {
 	_, err := service.TouristProgressService.FindTouristProgress(fmt.Sprint(userId))
 	if err != nil {
 		err = service.TouristProgressService.Create(&model.TouristProgress{UserId: float64(userId), Xp: 0, Level: 0})
@@ -56,56 +56,11 @@ func (service *EncounterService) Activate(userId int, longitude int, latitude in
 		return errors.New("error with activating encounter")
 	}
 	if canActivate {
-		if encounter.Status == model.EncounterStatus(model.Misc) {
-			miscEncounter, err := service.MiscEncounterService.FindEncounter(encounter.ID.String())
-			if err != nil {
-				return errors.New("error searching for misc encounter")
-			}
-			err = service.MiscEncounterService.Save(miscEncounter)
-			if err != nil {
-				return errors.New("error saving misc encounter")
-			}
-			service.createDoneEncounter(userId, encounterId)
-			return nil
-		}
-		if encounter.Status == model.EncounterStatus(model.Social) {
-			socialEncounter, err := service.SocialEncounterService.FindEncounter(encounter.ID.String())
-			if err != nil {
-				return errors.New("error searching for social encounter")
-			}
-			err = service.SocialEncounterService.Save(socialEncounter)
-			if err != nil {
-				return errors.New("error saving social encounter")
-			}
-			service.createDoneEncounter(userId, encounterId)
-			return nil
-		}
-		if encounter.Status == model.EncounterStatus(model.KeyPoint) {
-			keyPointEncounter, err := service.KeyPointEncounterService.FindEncounter(encounter.ID.String())
-			if err != nil {
-				return errors.New("error searching for key point encounter")
-			}
-			err = service.KeyPointEncounterService.Save(keyPointEncounter)
-			if err != nil {
-				return errors.New("error saving key point encounter")
-			}
-			service.createDoneEncounter(userId, encounterId)
-			return nil
-		}
-		if encounter.Status == model.EncounterStatus(model.Hidden) {
-			hiddenEncounter, err := service.HiddenLocationEncounterService.FindEncounter(encounter.ID.String())
-			if err != nil {
-				return errors.New("error searching for hidden encounter")
-			}
-			err = service.HiddenLocationEncounterService.Save(hiddenEncounter)
-			if err != nil {
-				return errors.New("error saving hidden encounter")
-			}
-			service.createDoneEncounter(userId, encounterId)
-			return nil
-		}
+		service.createDoneEncounter(userId, encounterId)
+		return nil
+	} else {
+		return errors.New("can not activate encounter, you are too far")
 	}
-	return errors.New("unknown error")
 }
 
 func (service *EncounterService) createDoneEncounter(userId int, encounterId uuid.UUID) error {

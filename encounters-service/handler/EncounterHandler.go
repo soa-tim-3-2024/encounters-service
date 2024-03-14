@@ -17,8 +17,8 @@ type EncounterHandler struct {
 func (handler *EncounterHandler) Activate(writer http.ResponseWriter, req *http.Request) {
 	var position struct {
 		TouristId int
-		Longitude int
-		Latitude  int
+		Longitude float64
+		Latitude  float64
 	}
 	encounterId := mux.Vars(req)["id"]
 	err := json.NewDecoder(req.Body).Decode(&position)
@@ -28,7 +28,8 @@ func (handler *EncounterHandler) Activate(writer http.ResponseWriter, req *http.
 		return
 	}
 
-	encounterUUID, err := uuid.FromBytes([]byte(encounterId))
+	fmt.Println(encounterId)
+	encounterUUID, err := uuid.Parse(encounterId)
 	if err != nil {
 		fmt.Println("Error while creating uuid")
 		writer.WriteHeader(http.StatusBadRequest)
@@ -37,7 +38,8 @@ func (handler *EncounterHandler) Activate(writer http.ResponseWriter, req *http.
 	err = handler.EncounterService.Activate(position.TouristId, position.Longitude, position.Latitude, encounterUUID)
 	if err != nil {
 		fmt.Println("Error while activating encounter")
-		writer.WriteHeader(http.StatusInternalServerError)
+		fmt.Println(err.Error())
+		writer.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	writer.WriteHeader(http.StatusOK)

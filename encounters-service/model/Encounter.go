@@ -47,7 +47,7 @@ func (encounter *Encounter) BeforeCreate(scope *gorm.DB) error {
 	return nil
 }
 
-func (encounter *Encounter) CanActivate(userLongitute int, userLatitude int) (bool, error) {
+func (encounter *Encounter) CanActivate(userLongitute float64, userLatitude float64) (bool, error) {
 	if encounter.Status != EncounterStatus(Active) {
 		return false, errors.New("encounter is not active")
 	}
@@ -61,8 +61,8 @@ func (encounter *Encounter) CanActivate(userLongitute int, userLatitude int) (bo
 	encounterRadius := 50 //meters
 	latitude1 := encounter.Latitude * math.Pi / 180
 	longitude1 := encounter.Longitude * math.Pi / 180
-	latitude2 := float64(userLatitude) * math.Pi / 180
-	longitude2 := float64(userLongitute) * math.Pi / 180
+	latitude2 := userLatitude * math.Pi / 180
+	longitude2 := userLongitute * math.Pi / 180
 
 	latitudeDistance := latitude2 - latitude1
 	longitudeDistance := longitude2 - longitude1
