@@ -71,12 +71,16 @@ func main() {
 	doneEncounterService := &service.DoneEncounterService{DoneEncounterRepo: doneEncounterRepo}
 	//doneEncounterHandler := &handler.DoneEncounterHandler{DoneEncounterService: doneEncounterService}
 
+	encounterRepository := &repo.EncounterRepository{DatabaseConnection: database}
+
 	encounterService := &service.EncounterService{HiddenLocationEncounterService: *hiddenLocationEncounterService,
 		MiscEncounterService:     *miscEncounterService,
 		SocialEncounterService:   *socialEncounterService,
 		KeyPointEncounterService: *keyPointEncounterService,
 		TouristProgressService:   *touristProgressService,
-		DoneEncounterService:     *doneEncounterService}
+		DoneEncounterService:     *doneEncounterService,
+		EncounterRepository:      encounterRepository,
+	}
 	encounterHandler := &handler.EncounterHandler{EncounterService: *encounterService}
 
 	router := mux.NewRouter().StrictSlash(true)
@@ -94,6 +98,7 @@ func main() {
 	router.HandleFunc("/encounters/activate/{id}", encounterHandler.Activate).Methods("POST")
 
 	router.HandleFunc("/progress/{id}", touristProgressHandler.Get).Methods("GET")
+	router.HandleFunc("/encounters/all", encounterHandler.Get).Methods("GET")
 
 	// Set up CORS middleware
 	allowedHeaders := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"})

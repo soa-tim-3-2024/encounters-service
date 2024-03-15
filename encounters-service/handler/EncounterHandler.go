@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 )
 
@@ -28,14 +27,13 @@ func (handler *EncounterHandler) Activate(writer http.ResponseWriter, req *http.
 		return
 	}
 
-	fmt.Println(encounterId)
-	encounterUUID, err := uuid.Parse(encounterId)
+	/*encounterUUID, err := uuid.FromBytes([]byte(encounterId))
 	if err != nil {
 		fmt.Println("Error while creating uuid")
 		writer.WriteHeader(http.StatusBadRequest)
 		return
-	}
-	err = handler.EncounterService.Activate(position.TouristId, position.Longitude, position.Latitude, encounterUUID)
+	} */
+	err = handler.EncounterService.Activate(position.TouristId, position.Longitude, position.Latitude, encounterId)
 	if err != nil {
 		fmt.Println("Error while activating encounter")
 		fmt.Println(err.Error())
@@ -44,4 +42,15 @@ func (handler *EncounterHandler) Activate(writer http.ResponseWriter, req *http.
 	}
 	writer.WriteHeader(http.StatusOK)
 
+}
+
+func (handler *EncounterHandler) Get(writer http.ResponseWriter, req *http.Request) {
+	encounters, err := handler.EncounterService.GetEncounters()
+	writer.Header().Set("Content-Type", "application/json")
+	if err != nil {
+		writer.WriteHeader(http.StatusNotFound)
+		return
+	}
+	writer.WriteHeader(http.StatusOK)
+	json.NewEncoder(writer).Encode(encounters)
 }

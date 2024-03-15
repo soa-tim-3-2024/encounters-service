@@ -6,7 +6,6 @@ import (
 	"errors"
 	"math"
 
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -31,7 +30,7 @@ const (
 type StringArray []string
 
 type Encounter struct {
-	ID          uuid.UUID       `json:"id"`
+	ID          int             `json:"id"`
 	Title       string          `json:"title"`
 	Description string          `json:"description"`
 	Picture     string          `json:"picture"`
@@ -43,7 +42,11 @@ type Encounter struct {
 }
 
 func (encounter *Encounter) BeforeCreate(scope *gorm.DB) error {
-	encounter.ID = uuid.New()
+	var maxID int
+	if err := scope.Model(&Encounter{}).Select("COALESCE(MAX(id), 0)").Row().Scan(&maxID); err != nil {
+		return err
+	}
+	encounter.ID = maxID + 1
 	return nil
 }
 

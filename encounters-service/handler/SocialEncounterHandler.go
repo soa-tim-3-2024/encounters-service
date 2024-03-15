@@ -54,7 +54,7 @@ func (handler *SocialEncounterHandler) Create(writer http.ResponseWriter, req *h
 		return
 	}
 
-	encounter.EncounterID = baseEncounter.ID
+	//encounter.EncounterID = baseEncounter.ID
 	encounter.Encounter = baseEncounter
 
 	err = handler.SocialEncounterService.Create(&encounter)

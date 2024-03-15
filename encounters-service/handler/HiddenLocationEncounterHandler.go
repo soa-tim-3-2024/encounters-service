@@ -50,7 +50,7 @@ func (handler *HiddenLocationEncounterHandler) Create(writer http.ResponseWriter
 	var baseEncounter model.Encounter
 	json.Unmarshal(bodyBytes, &baseEncounter)
 	fmt.Println(baseEncounter)
-	encounter.EncounterID = baseEncounter.ID
+	//encounter.EncounterID = baseEncounter.ID
 	encounter.Encounter = baseEncounter
 	encounter.Encounter.Type = 1
 

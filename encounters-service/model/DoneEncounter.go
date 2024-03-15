@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 
 	"time"
@@ -19,7 +18,7 @@ const (
 )
 
 type DoneEncounter struct {
-	EncounterId         uuid.UUID           `json:"encounterId"`
+	EncounterId         int                 `json:"encounterId"`
 	UserId              int                 `json:"userId"`
 	DoneEncounterStatus DoneEncounterStatus `json:"doneEncounterStatus"`
 	CompletionTime      time.Time           `json:"completionTime"`
