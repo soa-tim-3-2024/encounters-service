@@ -5,11 +5,11 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type HiddenLocationEncounter struct {
-	EncounterID      uuid.UUID `gorm:"primaryKey"`
+	EncounterID      int       `gorm:"primaryKey"`
 	Encounter        Encounter `json:",omitempty"`
 	PictureLongitude float64   `json:"pictureLongitude"`
 	PictureLatitude  float64   `json:"pictureLatitude"`
@@ -29,4 +29,9 @@ func (a *StringArray) ScanHiddenLocation(value interface{}) error {
 		return errors.New("type assertion to []byte failed")
 	}
 	return json.Unmarshal(b, a)
+}
+
+func (encounter *HiddenLocationEncounter) BeforeCreate(scope *gorm.DB) error {
+	//encounter.EncounterID = uuid.New()
+	return nil
 }

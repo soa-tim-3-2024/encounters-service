@@ -47,7 +47,7 @@ func (handler *MiscEncounterHandler) Create(writer http.ResponseWriter, req *htt
 
 	var baseEncounter model.Encounter
 	json.Unmarshal(bodyBytes, &baseEncounter)
-	encounter.EncounterID = baseEncounter.ID
+	//encounter.EncounterID = baseEncounter.ID
 	encounter.Encounter = baseEncounter
 	encounter.Encounter.Type = 2
 	err = handler.MiscEncounterService.Create(&encounter)

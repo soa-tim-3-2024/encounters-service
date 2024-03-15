@@ -47,11 +47,11 @@ func (handler *KeyPointEncounterHandler) Create(writer http.ResponseWriter, req 
 
 	var baseEncounter model.Encounter
 	json.Unmarshal(bodyBytes, &baseEncounter)
-	encounter.EncounterID = baseEncounter.ID
+	//encounter.EncounterID = baseEncounter.ID
 	encounter.Encounter = baseEncounter
 	encounter.Encounter.Type = 3
 
-	encounter.EncounterID = baseEncounter.ID
+	//encounter.EncounterID = baseEncounter.ID
 	encounter.Encounter = baseEncounter
 
 	err = handler.KeyPointEncounterService.Create(&encounter)

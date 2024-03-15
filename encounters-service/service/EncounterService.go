@@ -2,10 +2,10 @@ package service
 
 import (
 	"encounters/model"
+	"encounters/repo"
 	"errors"
 	"fmt"
-
-	"github.com/google/uuid"
+	"strconv"
 )
 
 type EncounterService struct {
@@ -15,35 +15,41 @@ type EncounterService struct {
 	SocialEncounterService         SocialEncounterService
 	TouristProgressService         TouristProgressService
 	DoneEncounterService           DoneEncounterService
+	EncounterRepository            *repo.EncounterRepository
 }
 
-func (service *EncounterService) FindEncounter(encounterId uuid.UUID) (model.Encounter, error) {
-	encounter1, err := service.HiddenLocationEncounterService.FindEncounter(encounterId.String())
+func (service *EncounterService) FindEncounter(encounterId string) (model.Encounter, error) {
+	encounter1, err := service.HiddenLocationEncounterService.FindEncounter(encounterId)
 	if err == nil {
 		return encounter1.Encounter, nil
 	}
-	encounter2, err := service.KeyPointEncounterService.FindEncounter(encounterId.String())
+	encounter2, err := service.KeyPointEncounterService.FindEncounter(encounterId)
 	if err == nil {
 		return encounter2.Encounter, nil
 	}
-	encounter3, err := service.MiscEncounterService.FindEncounter(encounterId.String())
+	encounter3, err := service.MiscEncounterService.FindEncounter(encounterId)
 	if err == nil {
 		return encounter3.Encounter, nil
 	}
-	encounter4, err := service.SocialEncounterService.FindEncounter(encounterId.String())
+	encounter4, err := service.SocialEncounterService.FindEncounter(encounterId)
 	if err == nil {
 		return encounter4.Encounter, nil
 	}
 	return model.Encounter{}, errors.New("no encounter found")
 }
 
-func (service *EncounterService) Activate(userId int, longitude int, latitude int, encounterId uuid.UUID) error {
+func (service *EncounterService) Activate(userId int, longitude int, latitude int, encounterId string) error {
 	_, err := service.TouristProgressService.FindTouristProgress(fmt.Sprint(userId))
 	if err != nil {
 		err = service.TouristProgressService.Create(&model.TouristProgress{UserId: float64(userId), Xp: 0, Level: 0})
 		if err != nil {
 			return errors.New("unable to create tourist progress")
 		}
+	}
+
+	encounterIdConverted, err := strconv.Atoi(encounterId)
+	if err != nil {
+		return fmt.Errorf("failed to convert encounterId to integer: %w", err)
 	}
 
 	encounter, err := service.FindEncounter(encounterId)
@@ -57,7 +63,7 @@ func (service *EncounterService) Activate(userId int, longitude int, latitude in
 	}
 	if canActivate {
 		if encounter.Status == model.EncounterStatus(model.Misc) {
-			miscEncounter, err := service.MiscEncounterService.FindEncounter(encounter.ID.String())
+			miscEncounter, err := service.MiscEncounterService.FindEncounter(fmt.Sprint(encounter.ID))
 			if err != nil {
 				return errors.New("error searching for misc encounter")
 			}
@@ -65,11 +71,11 @@ func (service *EncounterService) Activate(userId int, longitude int, latitude in
 			if err != nil {
 				return errors.New("error saving misc encounter")
 			}
-			service.createDoneEncounter(userId, encounterId)
+			service.createDoneEncounter(userId, encounterIdConverted)
 			return nil
 		}
 		if encounter.Status == model.EncounterStatus(model.Social) {
-			socialEncounter, err := service.SocialEncounterService.FindEncounter(encounter.ID.String())
+			socialEncounter, err := service.SocialEncounterService.FindEncounter(fmt.Sprint(encounter.ID))
 			if err != nil {
 				return errors.New("error searching for social encounter")
 			}
@@ -77,11 +83,11 @@ func (service *EncounterService) Activate(userId int, longitude int, latitude in
 			if err != nil {
 				return errors.New("error saving social encounter")
 			}
-			service.createDoneEncounter(userId, encounterId)
+			service.createDoneEncounter(userId, encounterIdConverted)
 			return nil
 		}
 		if encounter.Status == model.EncounterStatus(model.KeyPoint) {
-			keyPointEncounter, err := service.KeyPointEncounterService.FindEncounter(encounter.ID.String())
+			keyPointEncounter, err := service.KeyPointEncounterService.FindEncounter(fmt.Sprint(encounter.ID))
 			if err != nil {
 				return errors.New("error searching for key point encounter")
 			}
@@ -89,11 +95,11 @@ func (service *EncounterService) Activate(userId int, longitude int, latitude in
 			if err != nil {
 				return errors.New("error saving key point encounter")
 			}
-			service.createDoneEncounter(userId, encounterId)
+			service.createDoneEncounter(userId, encounterIdConverted)
 			return nil
 		}
 		if encounter.Status == model.EncounterStatus(model.Hidden) {
-			hiddenEncounter, err := service.HiddenLocationEncounterService.FindEncounter(encounter.ID.String())
+			hiddenEncounter, err := service.HiddenLocationEncounterService.FindEncounter(fmt.Sprint(encounter.ID))
 			if err != nil {
 				return errors.New("error searching for hidden encounter")
 			}
@@ -101,18 +107,26 @@ func (service *EncounterService) Activate(userId int, longitude int, latitude in
 			if err != nil {
 				return errors.New("error saving hidden encounter")
 			}
-			service.createDoneEncounter(userId, encounterId)
+			service.createDoneEncounter(userId, encounterIdConverted)
 			return nil
 		}
 	}
 	return errors.New("unknown error")
 }
 
-func (service *EncounterService) createDoneEncounter(userId int, encounterId uuid.UUID) error {
+func (service *EncounterService) createDoneEncounter(userId int, encounterId int) error {
 	err := service.DoneEncounterService.Create(&model.DoneEncounter{EncounterId: encounterId, UserId: userId, DoneEncounterStatus: model.DoneEncounterStatus(model.InProgress)})
 	if err != nil {
 		return err
 	}
 	println("Created done encounter")
 	return nil
+}
+
+func (service *EncounterService) GetEncounters() (*[]model.Encounter, error) {
+	tours, err := service.EncounterRepository.GetEncounters()
+	if err != nil {
+		return nil, fmt.Errorf(fmt.Sprintf("menu item with id %s not found", "-2"))
+	}
+	return &tours, nil
 }
