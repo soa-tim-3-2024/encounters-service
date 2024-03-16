@@ -41,7 +41,6 @@ func (handler *EncounterHandler) Activate(writer http.ResponseWriter, req *http.
 		return
 	}
 	writer.WriteHeader(http.StatusOK)
-
 }
 
 func (handler *EncounterHandler) Get(writer http.ResponseWriter, req *http.Request) {
@@ -53,4 +52,46 @@ func (handler *EncounterHandler) Get(writer http.ResponseWriter, req *http.Reque
 	}
 	writer.WriteHeader(http.StatusOK)
 	json.NewEncoder(writer).Encode(encounters)
+}
+
+func (handler *EncounterHandler) Cancel(writer http.ResponseWriter, req *http.Request) {
+	userId := mux.Vars(req)["userId"]
+	encounterId := mux.Vars(req)["encounterId"]
+	err := handler.EncounterService.Cancel(userId, encounterId)
+	if err != nil {
+		writer.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	writer.WriteHeader(http.StatusOK)
+}
+
+func (handler *EncounterHandler) GetCompletedByUser(writer http.ResponseWriter, req *http.Request) {
+	userId := mux.Vars(req)["userId"]
+	encounters, err := handler.EncounterService.GetCompleted(userId)
+	if err != nil {
+		writer.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	writer.WriteHeader(http.StatusOK)
+	println(*encounters)
+	json.NewEncoder(writer).Encode(*encounters)
+}
+
+func (handler *EncounterHandler) IsCompleted(writer http.ResponseWriter, req *http.Request) {
+	userId := mux.Vars(req)["userId"]
+	encounterId := mux.Vars(req)["encounterId"]
+	completed := handler.EncounterService.IsCompleted(userId, encounterId)
+	writer.WriteHeader(http.StatusOK)
+	json.NewEncoder(writer).Encode(completed)
+}
+
+func (handler *EncounterHandler) Complete(writer http.ResponseWriter, req *http.Request) {
+	userId := mux.Vars(req)["userId"]
+	encounterId := mux.Vars(req)["encounterId"]
+	err := handler.EncounterService.Complete(userId, encounterId)
+	if err != nil {
+		writer.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	writer.WriteHeader(http.StatusOK)
 }

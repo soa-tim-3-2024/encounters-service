@@ -27,3 +27,12 @@ func (repo *TouristProgressRepository) CreateTouristProgress(progress *model.Tou
 	println("Rows affected: ", dbResult.RowsAffected)
 	return nil
 }
+
+func (repo *TouristProgressRepository) Save(progress *model.TouristProgress) error {
+	dbResult := repo.DatabaseConnection.Where("id = ?", progress.ID).Save(&progress)
+	if dbResult.Error != nil {
+		return dbResult.Error
+	}
+	println("Rows affeccted: ", dbResult.RowsAffected)
+	return nil
+}

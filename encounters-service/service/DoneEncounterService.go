@@ -20,6 +20,29 @@ func (service *DoneEncounterService) FindByUserId(userId string) ([]model.DoneEn
 }
 
 func (service *DoneEncounterService) Create(doneEncounter *model.DoneEncounter) error {
-	err := service.DoneEncounterRepo.Create(doneEncounter)
-	return err
+	return service.DoneEncounterRepo.Create(doneEncounter)
+}
+
+func (service *DoneEncounterService) Find(userId string, encounterId string) (model.DoneEncounter, error) {
+	return service.DoneEncounterRepo.Find(userId, encounterId)
+}
+
+func (service *DoneEncounterService) Save(doneEncounter model.DoneEncounter) error {
+	return service.DoneEncounterRepo.Save(doneEncounter)
+}
+
+func (service *DoneEncounterService) Delete(userId string, encounterId string) error {
+	return service.DoneEncounterRepo.Delete(userId, encounterId)
+}
+
+func (service *DoneEncounterService) GetCompletedByUserId(userId string) (*[]model.DoneEncounter, error) {
+	return service.DoneEncounterRepo.GetCompletedByUserId(userId)
+}
+
+func (service *DoneEncounterService) GetActiveByUserId(userId string) (*[]model.DoneEncounter, error) {
+	return service.DoneEncounterRepo.GetActiveByUserId(userId)
+}
+
+func (service *DoneEncounterService) IsCompleted(userId string, encounterId string) bool {
+	return service.DoneEncounterRepo.IsCompleted(userId, encounterId)
 }

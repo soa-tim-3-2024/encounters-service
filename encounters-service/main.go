@@ -95,7 +95,12 @@ func main() {
 	router.HandleFunc("/hidden/location/encounters", hiddenLocationEncounterHandler.Create).Methods("POST")
 	router.HandleFunc("/keyPoint/encounters/{id}", keyPointEncounterHandler.Get).Methods("GET")
 	router.HandleFunc("/keyPoint/encounters", keyPointEncounterHandler.Create).Methods("POST")
+
+	router.HandleFunc("/encounters/getCompletedByUser/{userId}", encounterHandler.GetCompletedByUser).Methods("GET")
 	router.HandleFunc("/encounters/activate/{id}", encounterHandler.Activate).Methods("POST")
+	router.HandleFunc("/encounters/cancel/{userId}/{encounterId}", encounterHandler.Cancel).Methods("GET")
+	router.HandleFunc("/encounters/comleted/{userId}/{encounterId}", encounterHandler.IsCompleted).Methods("GET")
+	router.HandleFunc("/encounters/complete/{userId}/{encounterId}", encounterHandler.Complete).Methods("GET")
 
 	router.HandleFunc("/progress/{id}", touristProgressHandler.Get).Methods("GET")
 	router.HandleFunc("/encounters/all", encounterHandler.Get).Methods("GET")
