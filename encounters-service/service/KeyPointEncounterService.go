@@ -26,3 +26,8 @@ func (service *KeyPointEncounterService) Create(encounter *model.KeyPointEncount
 	}
 	return nil
 }
+
+func (service *KeyPointEncounterService) Save(encounter *model.KeyPointEncounter) error {
+	err := service.EncounterRepo.Save(encounter)
+	return err
+}

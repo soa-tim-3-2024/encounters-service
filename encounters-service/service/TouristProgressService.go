@@ -25,3 +25,16 @@ func (service *TouristProgressService) Create(touristProgress *model.TouristProg
 	}
 	return nil
 }
+
+func (service *TouristProgressService) Save(progress *model.TouristProgress) error {
+	return service.TPRepo.Save(progress)
+}
+
+func (service *TouristProgressService) GiveXp(userId string, xp int) error {
+	progress, err := service.TPRepo.FindById(userId)
+	if err != nil {
+		return err
+	}
+	progress.Xp += xp
+	return service.TPRepo.Save(&progress)
+}

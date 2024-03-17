@@ -30,6 +30,7 @@ func initDB() *gorm.DB {
 	database.AutoMigrate(&model.KeyPointEncounter{})
 	database.AutoMigrate(&model.HiddenLocationEncounter{})
 	database.AutoMigrate(&model.TouristProgress{})
+	database.AutoMigrate(&model.DoneEncounter{})
 
 	database.Exec("INSERT INTO tourist_progresses VALUES ('aec7e123-233d-4a09-a289-75308ea5b7e6', '-4', '85', '12')")
 
@@ -66,6 +67,22 @@ func main() {
 	touristProgressService := &service.TouristProgressService{TPRepo: touristProgressRepo}
 	touristProgressHandler := &handler.TouristProgressHandler{TouristProgressService: touristProgressService}
 
+	doneEncounterRepo := &repo.DoneEncounterRepository{DatabaseConnection: database}
+	doneEncounterService := &service.DoneEncounterService{DoneEncounterRepo: doneEncounterRepo}
+	//doneEncounterHandler := &handler.DoneEncounterHandler{DoneEncounterService: doneEncounterService}
+
+	encounterRepository := &repo.EncounterRepository{DatabaseConnection: database}
+
+	encounterService := &service.EncounterService{HiddenLocationEncounterService: *hiddenLocationEncounterService,
+		MiscEncounterService:     *miscEncounterService,
+		SocialEncounterService:   *socialEncounterService,
+		KeyPointEncounterService: *keyPointEncounterService,
+		TouristProgressService:   *touristProgressService,
+		DoneEncounterService:     *doneEncounterService,
+		EncounterRepository:      encounterRepository,
+	}
+	encounterHandler := &handler.EncounterHandler{EncounterService: *encounterService}
+
 	router := mux.NewRouter().StrictSlash(true)
 
 	router.HandleFunc("/students/{id}", studentHandler.Get).Methods("GET")
@@ -79,7 +96,14 @@ func main() {
 	router.HandleFunc("/keyPoint/encounters/{id}", keyPointEncounterHandler.Get).Methods("GET")
 	router.HandleFunc("/keyPoint/encounters", keyPointEncounterHandler.Create).Methods("POST")
 
+	router.HandleFunc("/encounters/getCompletedByUser/{userId}", encounterHandler.GetCompletedByUser).Methods("GET")
+	router.HandleFunc("/encounters/activate/{id}", encounterHandler.Activate).Methods("POST")
+	router.HandleFunc("/encounters/cancel/{userId}/{encounterId}", encounterHandler.Cancel).Methods("GET")
+	router.HandleFunc("/encounters/comleted/{userId}/{encounterId}", encounterHandler.IsCompleted).Methods("GET")
+	router.HandleFunc("/encounters/complete/{userId}/{encounterId}", encounterHandler.Complete).Methods("GET")
+
 	router.HandleFunc("/progress/{id}", touristProgressHandler.Get).Methods("GET")
+	router.HandleFunc("/encounters/all", encounterHandler.Get).Methods("GET")
 
 	// Set up CORS middleware
 	allowedHeaders := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"})

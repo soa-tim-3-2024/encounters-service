@@ -4,8 +4,8 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"errors"
+	"math"
 
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -30,7 +30,7 @@ const (
 type StringArray []string
 
 type Encounter struct {
-	ID          uuid.UUID       `json:"id"`
+	ID          int             `json:"id"`
 	Title       string          `json:"title"`
 	Description string          `json:"description"`
 	Picture     string          `json:"picture"`
@@ -42,8 +42,41 @@ type Encounter struct {
 }
 
 func (encounter *Encounter) BeforeCreate(scope *gorm.DB) error {
-	encounter.ID = uuid.New()
+	var maxID int
+	if err := scope.Model(&Encounter{}).Select("COALESCE(MAX(id), 0)").Row().Scan(&maxID); err != nil {
+		return err
+	}
+	encounter.ID = maxID + 1
 	return nil
+}
+
+func (encounter *Encounter) CanActivate(userLongitute float64, userLatitude float64) (bool, error) {
+	if encounter.Status != EncounterStatus(Active) {
+		return false, errors.New("encounter is not active")
+	}
+	if userLongitute < -180 || userLongitute > 180 {
+		return false, errors.New("invalid longitude")
+	}
+	if userLatitude < -90 || userLatitude > 90 {
+		return false, errors.New("invalid latitude")
+	}
+	earthRadius := 6371000
+	encounterRadius := 50 //meters
+	latitude1 := encounter.Latitude * math.Pi / 180
+	longitude1 := encounter.Longitude * math.Pi / 180
+	latitude2 := userLatitude * math.Pi / 180
+	longitude2 := userLongitute * math.Pi / 180
+
+	latitudeDistance := latitude2 - latitude1
+	longitudeDistance := longitude2 - longitude1
+
+	a := math.Sin(latitudeDistance/2)*math.Sin(latitudeDistance/2) +
+		math.Cos(latitude1)*math.Cos(latitude2)*
+			math.Sin(longitudeDistance/2)*math.Sin(longitudeDistance/2)
+	c := 2 * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
+	distance := float64(earthRadius) * c
+
+	return (distance < float64(encounterRadius)), nil
 }
 
 func (a StringArray) Value() (driver.Value, error) {

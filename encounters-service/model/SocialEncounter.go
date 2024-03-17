@@ -5,11 +5,11 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type SocialEncounter struct {
-	EncounterID  uuid.UUID `gorm:"primaryKey"`
+	EncounterID  int       `gorm:"primaryKey"`
 	Encounter    Encounter `json:",omitempty"`
 	PeopleNumber int       `json:"peopleNumber"`
 }
@@ -28,4 +28,9 @@ func (a *StringArray) ScanSocial(value interface{}) error {
 		return errors.New("type assertion to []byte failed")
 	}
 	return json.Unmarshal(b, a)
+}
+
+func (encounter *SocialEncounter) BeforeCreate(scope *gorm.DB) error {
+	//encounter.EncounterID = uuid.New()
+	return nil
 }

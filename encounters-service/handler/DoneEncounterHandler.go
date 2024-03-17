@@ -5,21 +5,23 @@ import (
 	"encoding/json"
 	"encounters/model"
 	"encounters/service"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/mux"
 )
 
-type MiscEncounterHandler struct {
-	MiscEncounterService *service.MiscEncounterService
+type DoneEncounterHandler struct {
+	DoneEncounterService *service.DoneEncounterService
 }
 
-func (handler *MiscEncounterHandler) Get(writer http.ResponseWriter, req *http.Request) {
-	id := mux.Vars(req)["id"]
-	log.Printf("Encounter sa id-em %s", id)
-	encounter, err := handler.MiscEncounterService.FindEncounter(id)
+func (handler *DoneEncounterHandler) Get(writer http.ResponseWriter, req *http.Request) {
+	userId := mux.Vars(req)["userId"]
+	log.Printf("DoneEncounter sa userId-em %s", userId)
+	encounter, err := handler.DoneEncounterService.FindByUserId(userId)
 	writer.Header().Set("Content-Type", "application/json")
 	if err != nil {
 		writer.WriteHeader(http.StatusNotFound)
@@ -29,7 +31,7 @@ func (handler *MiscEncounterHandler) Get(writer http.ResponseWriter, req *http.R
 	json.NewEncoder(writer).Encode(encounter)
 }
 
-func (handler *MiscEncounterHandler) Create(writer http.ResponseWriter, req *http.Request) {
+func (handler *DoneEncounterHandler) Create(writer http.ResponseWriter, req *http.Request) {
 	bodyBytes, err := io.ReadAll(io.TeeReader(req.Body, &bytes.Buffer{}))
 	if err != nil {
 		println("Error reading request body")
@@ -37,22 +39,20 @@ func (handler *MiscEncounterHandler) Create(writer http.ResponseWriter, req *htt
 		return
 	}
 
-	var encounter model.MiscEncounter
-	err = json.Unmarshal(bodyBytes, &encounter)
+	var doneEncounter model.DoneEncounter
+
+	err = json.Unmarshal(bodyBytes, &doneEncounter)
 	if err != nil {
 		println("Error while parsing json ")
 		writer.WriteHeader(http.StatusBadRequest)
 		return
 	}
+	doneEncounter.CompletionTime = time.Now()
+	fmt.Println(doneEncounter)
 
-	var baseEncounter model.Encounter
-	json.Unmarshal(bodyBytes, &baseEncounter)
-	//encounter.EncounterID = baseEncounter.ID
-	encounter.Encounter = baseEncounter
-	encounter.Encounter.Type = 2
-	err = handler.MiscEncounterService.Create(&encounter)
+	err = handler.DoneEncounterService.Create(&doneEncounter)
 	if err != nil {
-		println("Error while creating a new encounter")
+		println("Error while creating a new done encounter")
 		writer.WriteHeader(http.StatusExpectationFailed)
 		return
 	}
