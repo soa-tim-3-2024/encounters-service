@@ -70,5 +70,5 @@ func (repo *DoneEncounterRepository) GetCompletedByUserId(userId string) (*[]mod
 
 func (repo *DoneEncounterRepository) IsCompleted(userId string, encounterId string) bool {
 	_, err := repo.Find(userId, encounterId)
-	return err != nil
+	return err == nil
 }
